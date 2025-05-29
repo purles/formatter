@@ -74,13 +74,17 @@
             background-color: #f9f9f9;
             font-size: 14px;
             line-height: 1.5;
-        }
-        
-        .output pre {
+            width: 100%;
+            resize: vertical;
+            font-family: monospace;
             white-space: pre-wrap;
             word-wrap: break-word;
-            margin: 0;
-            font-family: monospace;
+            cursor: text;
+        }
+        
+        .output:focus {
+            border-color: #007cba;
+            outline: none;
         }
         
         .copy-btn {
@@ -135,9 +139,7 @@
             
             <div class="panel">
                 <h3>Wynik w HTML (UL/LI)</h3>
-                <div class="output" id="output">
-                    <pre>Tutaj pojawi się sformatowany kod HTML...</pre>
-                </div>
+                <textarea class="output" id="output" readonly>Tutaj pojawi się sformatowany kod HTML...</textarea>
                 <button class="copy-btn" onclick="copyToClipboard('output')">Skopiuj HTML</button>
                 <span class="success-msg" id="successMsg">Skopiowane!</span>
             </div>
@@ -155,9 +157,7 @@
             
             <div class="panel">
                 <h3>Wynik w HTML</h3>
-                <div class="output" id="ingredientsOutput">
-                    <pre>Tutaj pojawi się sformatowany kod HTML...</pre>
-                </div>
+                <textarea class="output" id="ingredientsOutput" readonly>Tutaj pojawi się sformatowany kod HTML...</textarea>
                 <button class="copy-btn" onclick="copyToClipboard('ingredientsOutput')">Skopiuj HTML</button>
                 <span class="success-msg" id="ingredientsSuccessMsg">Skopiowane!</span>
             </div>
@@ -177,7 +177,7 @@
             const text = inputText.value;
             
             if (!text.trim()) {
-                output.innerHTML = '<pre>Tutaj pojawi się sformatowany kod HTML...</pre>';
+                output.value = 'Tutaj pojawi się sformatowany kod HTML...';
                 return;
             }
             
@@ -199,12 +199,12 @@
             // Stwórz HTML
             if (cleanedLines.length > 0) {
                 const htmlOutput = '<ul>\n' + 
-                    cleanedLines.map(line => '  <li>' + escapeHtml(line) + '</li>').join('\n') + 
+                    cleanedLines.map(line => '  <li>' + line + '</li>').join('\n') + 
                     '\n</ul>';
                 
-                output.innerHTML = '<pre>' + escapeHtml(htmlOutput) + '</pre>';
+                output.value = htmlOutput;
             } else {
-                output.innerHTML = '<pre>Brak tekstu do przeformatowania...</pre>';
+                output.value = 'Brak tekstu do przeformatowania...';
             }
         }
         
@@ -212,7 +212,7 @@
             const text = ingredientsText.value;
             
             if (!text.trim()) {
-                ingredientsOutput.innerHTML = '<pre>Tutaj pojawi się sformatowany kod HTML...</pre>';
+                ingredientsOutput.value = 'Tutaj pojawi się sformatowany kod HTML...';
                 return;
             }
             
@@ -238,7 +238,7 @@
                             description += '.';
                         }
                         
-                        return `<strong>${escapeHtml(title)}</strong> – ${escapeHtml(description)}`;
+                        return `<strong>${title}</strong> – ${description}`;
                     }
                     
                     // Jeśli nie ma myślnika, sprawdź czy trzeba dodać kropkę
@@ -246,15 +246,15 @@
                         cleaned += '.';
                     }
                     
-                    return escapeHtml(cleaned);
+                    return cleaned;
                 });
             
             // Stwórz HTML z pustymi liniami między składnikami
             if (cleanedBlocks.length > 0) {
                 const htmlOutput = cleanedBlocks.join('\n\n');
-                ingredientsOutput.innerHTML = '<pre>' + escapeHtml(htmlOutput) + '</pre>';
+                ingredientsOutput.value = htmlOutput;
             } else {
-                ingredientsOutput.innerHTML = '<pre>Brak tekstu do przeformatowania...</pre>';
+                ingredientsOutput.value = 'Brak tekstu do przeformatowania...';
             }
         }
         
@@ -266,7 +266,7 @@
         
         function copyToClipboard(outputId) {
             const outputElement = document.getElementById(outputId);
-            const outputText = outputElement.querySelector('pre').textContent;
+            const outputText = outputElement.value;
             const successMsgId = outputId === 'output' ? 'successMsg' : 'ingredientsSuccessMsg';
             const successMsg = document.getElementById(successMsgId);
             
@@ -298,7 +298,13 @@
         
         // Przykładowy tekst przy załadowaniu tylko dla myślników
         window.addEventListener('load', () => {
-            inputText.value = `input`;
+            inputText.value = `– Delikatny produkt do mycia i demakijażu.
+– Odpowiedni do stosowania w okolicy oczu.
+– Każdy typ skóry, bez ograniczeń wiekowych, szczególnie skóra wrażliwa.
+– Delikatnie i skutecznie usuwa nawet wodoodporny makijaż oraz produkty z filtrami UV
+– Zmiękcza naskórek
+– Nawilża
+– Chroni film hydrolipidowy, zapobiegając przesuszeniu skóry`;
             formatText();
         });
     </script>
