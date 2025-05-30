@@ -51,7 +51,7 @@
         
         textarea {
             width: 100%;
-            min-height: 200px;
+            min-height: 80px;
             padding: 15px;
             border: 2px solid #ddd;
             border-radius: 4px;
@@ -67,7 +67,7 @@
         }
         
         .output {
-            min-height: 200px;
+            min-height: 80px;
             padding: 15px;
             border: 2px solid #ddd;
             border-radius: 4px;
@@ -163,17 +163,29 @@
             </div>
         </div>
     </section>
+    
+    <!-- SEKCJA REZULTATY -->
+    <section style="margin-top: 40px;">
+        <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Rezultaty</h2>
+        <div class="container">
+            <div class="panel">
+                <h3>Rezultaty badań</h3>
+                <textarea id="resultsText"></textarea>
+            </div>
+            
+            <div class="panel">
+                <h3>Wynik w HTML (UL/LI)</h3>
+                <textarea class="output" id="resultsOutput" readonly>Tutaj pojawi się sformatowany kod HTML...</textarea>
+                <button class="copy-btn" onclick="copyToClipboard('resultsOutput')">Skopiuj HTML</button>
+                <span class="success-msg" id="resultsSuccessMsg">Skopiowane!</span>
+            </div>
+        </div>
+    </section>
 
     <script>
-        const inputText = document.getElementById('inputText');
-        const output = document.getElementById('output');
-        const ingredientsText = document.getElementById('ingredientsText');
-        const ingredientsOutput = document.getElementById('ingredientsOutput');
-
-        inputText.addEventListener('input', formatText);
-        ingredientsText.addEventListener('input', formatIngredients);
-
         function formatText() {
+            const inputText = document.getElementById('inputText');
+            const output = document.getElementById('output');
             const text = inputText.value;
             
             if (!text.trim()) {
@@ -209,6 +221,8 @@
         }
         
         function formatIngredients() {
+            const ingredientsText = document.getElementById('ingredientsText');
+            const ingredientsOutput = document.getElementById('ingredientsOutput');
             const text = ingredientsText.value;
             
             if (!text.trim()) {
@@ -258,16 +272,66 @@
             }
         }
         
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function formatResults() {
+            const resultsText = document.getElementById('resultsText');
+            const resultsOutput = document.getElementById('resultsOutput');
+            const text = resultsText.value;
+            
+            if (!text.trim()) {
+                resultsOutput.value = 'Tutaj pojawi się sformatowany kod HTML...';
+                return;
+            }
+            
+            // Podziel tekst na linie
+            const lines = text.split('\n');
+            
+            // Przefiltruj i oczyść linie
+            const cleanedLines = lines
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .map((line, index, array) => {
+                    // Usuń podwójne spacje
+                    let cleaned = line.replace(/\s{2,}/g, ' ');
+                    
+                    // Usuń kropki z końca linii
+                    cleaned = cleaned.replace(/\.$/, '');
+                    
+                    // Znajdź procenty i ustaw je w <strong>
+                    cleaned = cleaned.replace(/(\d+%)/g, '<strong>$1</strong>');
+                    
+                    // Dla ostatniej linii dodaj gwiazdkę
+                    if (index === array.length - 1) {
+                        cleaned += '*';
+                    }
+                    
+                    return cleaned;
+                });
+            
+            // Stwórz HTML
+            if (cleanedLines.length > 0) {
+                const htmlOutput = '<ul>\n' + 
+                    cleanedLines.map(line => '  <li>' + line + '</li>').join('\n') + 
+                    '\n</ul>\n<small>* Badanie wykonano na grupie 20 osób.</small>';
+                
+                resultsOutput.value = htmlOutput;
+            } else {
+                resultsOutput.value = 'Brak tekstu do przeformatowania...';
+            }
         }
         
         function copyToClipboard(outputId) {
             const outputElement = document.getElementById(outputId);
             const outputText = outputElement.value;
-            const successMsgId = outputId === 'output' ? 'successMsg' : 'ingredientsSuccessMsg';
+            let successMsgId;
+            
+            if (outputId === 'output') {
+                successMsgId = 'successMsg';
+            } else if (outputId === 'ingredientsOutput') {
+                successMsgId = 'ingredientsSuccessMsg';
+            } else if (outputId === 'resultsOutput') {
+                successMsgId = 'resultsSuccessMsg';
+            }
+            
             const successMsg = document.getElementById(successMsgId);
             
             if (outputText === 'Tutaj pojawi się sformatowany kod HTML...' || 
@@ -296,9 +360,18 @@
             });
         }
         
-        // Przykładowy tekst przy załadowaniu tylko dla myślników
-        window.addEventListener('load', () => {
-            inputText.value = `input`;
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputText = document.getElementById('inputText');
+            const ingredientsText = document.getElementById('ingredientsText');
+            const resultsText = document.getElementById('resultsText');
+
+            inputText.addEventListener('input', formatText);
+            ingredientsText.addEventListener('input', formatIngredients);
+            resultsText.addEventListener('input', formatResults);
+            
+            // Przykładowy tekst przy załadowaniu tylko dla myślników
+            inputText.value = ``;
             formatText();
         });
     </script>
